@@ -28,7 +28,7 @@ class Product extends Model
 		self::SIMPLE => 'Simple',
 		self::CONFIGURABLE => 'Configurable',
 	];
-	
+
 	/**
      * Return the sluggable configuration array for this model.
      *
@@ -43,19 +43,19 @@ class Product extends Model
             ]
         ];
     }
-    
+
     public static function statuses()
 	{
 		return self::STATUSES;
 	}
-	
+
 	public function statusLabel()
 	{
 		$statuses = $this->statuses();
-		
+
 		return isset($this->status) ? $statuses[$this->status] : null;
 	}
-    
+
     public static function types()
 	{
 		return self::TYPES;
@@ -73,7 +73,7 @@ class Product extends Model
 
 	public function productInventory()
 	{
-		return $this->hasOne(productInventory::class);
+        return $this->hasOne(ProductInventory::class);
 	}
 
 	public function productImages()

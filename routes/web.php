@@ -20,14 +20,14 @@ Route::group(['middleware' => ['auth', 'is_admin'], 'prefix' => 'admin', 'as' =>
     Route::get('users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
     Route::get('profile', [\App\Http\Controllers\Admin\ProfileController::class, 'show'])->name('profile.show');
     Route::put('profile', [\App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('profile.update');
-    
-    Route::get('dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
     Route::resource('attributes', \App\Http\Controllers\Admin\AttributeController::class);
     Route::resource('attributes.attribute_options', \App\Http\Controllers\Admin\AttributeOptionController::class);
     Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);
     Route::resource('products.product_images', \App\Http\Controllers\Admin\ProductImageController::class);
-    
+
     Route::resource('slides', \App\Http\Controllers\Admin\SlideController::class);
     Route::get('slides/{slideId}/up', [\App\Http\Controllers\Admin\SlideController::class, 'moveUp']);
     Route::get('slides/{slideId}/down', [\App\Http\Controllers\Admin\SlideController::class, 'moveDown']);
@@ -66,9 +66,9 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('orders/received/{orderId}', [\App\Http\Controllers\Frontend\OrderController::class, 'received']);
     Route::get('orders', [\App\Http\Controllers\Frontend\OrderController::class, 'index']);
     Route::get('orders/{orderId}', [\App\Http\Controllers\Frontend\OrderController::class, 'show']);
-    
+
     Route::resource('wishlists', \App\Http\Controllers\Frontend\WishListController::class)->only(['index','store','destroy']);
-    
+
     Route::get('profile',  [\App\Http\Controllers\Auth\ProfileController::class, 'index']);
     Route::put('profile', [\App\Http\Controllers\Auth\ProfileController::class, 'update']);
 
