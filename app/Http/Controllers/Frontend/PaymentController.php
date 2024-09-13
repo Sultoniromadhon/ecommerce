@@ -117,13 +117,13 @@ class PaymentController extends Controller
         $payload = $request->getContent();
         $notification = json_decode($payload);
 
-        // Pastikan data dari notifikasi tidak kosong
-        if (!$notification || !isset($notification->user_id) || !isset($notification->status_code) || !isset($notification->gross_amount)) {
+        // Validasi payload
+        if (!$notification || !isset($notification->order_id) || !isset($notification->signature_key) || !isset($notification->status_code) || !isset($notification->gross_amount)) {
             return response(['message' => 'Invalid payload'], 400);
         }
 
-        // Hitung validSignatureKey
-        $validSignatureKey = hash("sha512", $notification->user_id . $notification->status_code . $notification->gross_amount . config('midtrans.serverKey'));
+        // Hitung validSignatureKey menggunakan order_id
+        $validSignatureKey = hash("sha512", $notification->order_id . $notification->status_code . $notification->gross_amount . config('midtrans.serverKey'));
 
         // Validasi signature
         if ($notification->signature_key != $validSignatureKey) {
@@ -141,7 +141,11 @@ class PaymentController extends Controller
 
         // Jika order sudah dibayar, kirim respons bahwa transaksi sudah dilakukan
         if ($order->isPaid()) {
-            return response(['message' => 'The order has been paid before'], 422);
+            \Log::info('Order ' . $order->id . ' has been paid before.');
+            return response(
+                ['message' => 'The order has been paid before'],
+                422
+            );
         }
 
         // Ambil status transaksi dan detail pembayaran
@@ -180,6 +184,7 @@ class PaymentController extends Controller
                 $paymentStatus = Payment::CANCEL;
                 break;
             default:
+                \Log::warning('Unknown transaction status: ' . $transaction);
                 return response(['message' => 'Unknown transaction status'], 400);
         }
 
@@ -200,10 +205,17 @@ class PaymentController extends Controller
         ];
 
         // Simpan informasi pembayaran
-        $payment = Payment::create($paymentParams);
+        try {
+            $payment = Payment::create($paymentParams);
+        } catch (\Exception $e) {
+            \Log::error('Failed to save payment: ' . $e->getMessage());
+            return response(['message' => 'Payment could not be saved'], 500);
+        }
 
         // Jika pembayaran berhasil disimpan, proses order
-        if ($paymentStatus && $payment) {
+        if (
+            $paymentStatus && $payment
+        ) {
             \DB::transaction(function () use ($order, $payment) {
                 if (in_array($payment->status, [Payment::SUCCESS, Payment::SETTLEMENT])) {
                     $order->payment_status = Order::PAID;
@@ -218,6 +230,7 @@ class PaymentController extends Controller
 
         return response(['code' => 200, 'message' => $message], 200);
     }
+
 
 
     /**
