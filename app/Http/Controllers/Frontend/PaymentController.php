@@ -118,12 +118,12 @@ class PaymentController extends Controller
         $notification = json_decode($payload);
 
         // Validasi payload
-        if (!$notification || !isset($notification->id) || !isset($notification->signature_key) || !isset($notification->status_code) || !isset($notification->gross_amount)) {
+        if (!$notification || !isset($notification->order_id) || !isset($notification->signature_key) || !isset($notification->status_code) || !isset($notification->gross_amount)) {
             return response(['message' => 'Invalid payload'], 400);
         }
 
         // Hitung validSignatureKey menggunakan order_id
-        $validSignatureKey = hash("sha512", $notification->id . $notification->status_code . $notification->gross_amount . config('midtrans.serverKey'));
+        $validSignatureKey = hash("sha512", $notification->order_id . $notification->status_code . $notification->gross_amount . config('midtrans.serverKey'));
 
         // $signatureString = $order_id . $status_code . $gross_amount . $serverKey;
         // Validasi signature
@@ -192,17 +192,17 @@ class PaymentController extends Controller
         // Buat parameter pembayaran
         $paymentParams = [
             'order_id' => $order->id,
-            'number' => Payment::generateCode(),
+            // 'number' => Payment::generateCode(),
             'amount' => $paymentNotification->gross_amount,
-            'method' => 'midtrans',
-            'status' => $paymentStatus,
-            'token' => $paymentNotification->transaction_id,
-            'payloads' => $payload,
-            'payment_type' => $paymentNotification->payment_type,
-            'va_number' => $vaNumber,
-            'vendor_name' => $vendorName,
-            'biller_code' => $paymentNotification->biller_code ?? null,
-            'bill_key' => $paymentNotification->bill_key ?? null,
+            // 'method' => 'midtrans',
+            // 'status' => $paymentStatus,
+            // 'token' => $paymentNotification->transaction_id,
+            // 'payloads' => $payload,
+            // 'payment_type' => $paymentNotification->payment_type,
+            // 'va_number' => $vaNumber,
+            // 'vendor_name' => $vendorName,
+            // 'biller_code' => $paymentNotification->biller_code ?? null,
+            // 'bill_key' => $paymentNotification->bill_key ?? null,
         ];
 
         // Simpan informasi pembayaran
