@@ -14,9 +14,8 @@ class PaymentController extends Controller
         $payload = $request->getContent();
         $notification = json_decode($payload);
 
-        $validSignatureKey = hash("sha512", $notification->user_id . $notification->status_code . $notification->gross_amount . config('midtrans.serverKey'));
+        $validSignatureKey = hash("sha512", $notification->order_id . $notification->status_code . $notification->gross_amount . config('midtrans.serverKey'));
 
-        // dd($validSignatureKey);
         if ($notification->signature_key != $validSignatureKey) {
             return response(['message' => 'Invalid signature'], 403);
         }
