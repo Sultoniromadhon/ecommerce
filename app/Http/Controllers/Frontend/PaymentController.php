@@ -17,6 +17,15 @@ class PaymentController extends Controller
         $payload = $request->getContent();
         $notification = json_decode($payload);
 
+        if (!$notification) {
+            return response(['message' => 'Invalid JSON payload'], 400);
+        }
+
+        // Periksa apakah objek 'order_id' ada di payload
+        if (!isset($notification->order_id)) {
+            return response(['message' => 'Missing order_id in payload'], 400);
+        }
+
         $validSignatureKey = hash("sha512", $notification->order_id . $notification->status_code . $notification->gross_amount . config('midtrans.serverKey'));
 
         if ($notification->signature_key != $validSignatureKey) {
