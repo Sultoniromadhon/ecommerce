@@ -74,17 +74,17 @@ class PaymentController extends Controller
 
         $paymentParams = [
             'order_id' => $order->id,
-            'number' => Payment::generateCode(),
+            // 'number' => Payment::generateCode(),
             'amount' => $paymentNotification->gross_amount,
-            'method' => 'midtrans',
-            'status' => $paymentStatus,
-            'token' => $paymentNotification->transaction_id,
-            'payloads' => $payload,
-            'payment_type' => $paymentNotification->payment_type,
-            'va_number' => $vaNumber,
-            'vendor_name' => $vendorName,
-            'biller_code' => $paymentNotification->biller_code,
-            'bill_key' => $paymentNotification->bill_key,
+            // 'method' => 'midtrans',
+            // 'status' => $paymentStatus,
+            // 'token' => $paymentNotification->transaction_id,
+            // 'payloads' => $payload,
+            // 'payment_type' => $paymentNotification->payment_type,
+            // 'va_number' => $vaNumber,
+            // 'vendor_name' => $vendorName,
+            // 'biller_code' => $paymentNotification->biller_code,
+            // 'bill_key' => $paymentNotification->bill_key,
         ];
 
         $payment = Payment::create($paymentParams);
