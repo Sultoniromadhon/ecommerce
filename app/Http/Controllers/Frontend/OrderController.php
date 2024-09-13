@@ -309,8 +309,8 @@ class OrderController extends Controller
 		}
 	}
 
-	private function _generatePaymentToken($order)
-	{;
+    private function _generatePaymentToken($order)
+    {;
 		$this->initPaymentGateway();
 
 		$customerDetails = [
@@ -323,7 +323,7 @@ class OrderController extends Controller
 		$params = [
 			'enable_payments' => Payment::PAYMENT_CHANNELS,
 			'transaction_details' => [
-                'order_id' => $order->code,
+                'order_id' => $order->id,
 				'gross_amount' => $order->grand_total,
 			],
 			'customer_details' => $customerDetails,
