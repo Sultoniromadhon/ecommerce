@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Models\Order;
 use App\Models\Payment;
+use Midtrans\Notification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 
 class PaymentController extends Controller
@@ -23,7 +26,7 @@ class PaymentController extends Controller
         $this->initPaymentGateway();
         $statusCode = null;
 
-        $paymentNotification = new \Midtrans\Notification();
+        $paymentNotification = new Notification();
         $order = Order::where('code', $paymentNotification->order_id)->firstOrFail();
 
         if ($order->isPaid()) {
@@ -63,34 +66,34 @@ class PaymentController extends Controller
             $paymentStatus = Payment::PENDING;
         } else if ($transaction == 'deny') {
             // TODO set payment status in merchant's database to 'Denied'
-            $paymentStatus = PAYMENT::DENY;
+            $paymentStatus = Payment::DENY;
         } else if ($transaction == 'expire') {
             // TODO set payment status in merchant's database to 'expire'
-            $paymentStatus = PAYMENT::EXPIRE;
+            $paymentStatus = Payment::EXPIRE;
         } else if ($transaction == 'cancel') {
             // TODO set payment status in merchant's database to 'Denied'
-            $paymentStatus = PAYMENT::CANCEL;
+            $paymentStatus = Payment::CANCEL;
         }
 
         $paymentParams = [
             'order_id' => $order->id,
-            // 'number' => Payment::generateCode(),
+            'number' => Payment::generateCode(),
             'amount' => $paymentNotification->gross_amount,
-            // 'method' => 'midtrans',
-            // 'status' => $paymentStatus,
-            // 'token' => $paymentNotification->transaction_id,
-            // 'payloads' => $payload,
-            // 'payment_type' => $paymentNotification->payment_type,
-            // 'va_number' => $vaNumber,
-            // 'vendor_name' => $vendorName,
-            // 'biller_code' => $paymentNotification->biller_code,
-            // 'bill_key' => $paymentNotification->bill_key,
+            'method' => 'midtrans',
+            'status' => $paymentStatus,
+            'token' => $paymentNotification->transaction_id,
+            'payloads' => $payload,
+            'payment_type' => $paymentNotification->payment_type,
+            'va_number' => $vaNumber,
+            'vendor_name' => $vendorName,
+            'biller_code' => $paymentNotification->biller_code,
+            'bill_key' => $paymentNotification->bill_key,
         ];
 
         $payment = Payment::create($paymentParams);
 
         if ($paymentStatus && $payment) {
-            \DB::transaction(
+            DB::transaction(
                 function () use ($order, $payment) {
                     if (in_array($payment->status, [Payment::SUCCESS, Payment::SETTLEMENT])) {
                         $order->payment_status = Order::PAID;
