@@ -28,7 +28,7 @@ class OrderController extends Controller
 
 		return view('frontend.orders.show',compact('order'));
 	}
-	
+
 	private function _getTotalWeight()
 	{
 		if (Cart::count() <= 0) {
@@ -55,7 +55,7 @@ class OrderController extends Controller
 	public function shippingCost(Request $request)
 	{
 		$destination = $request->input('city_id');
-		
+
 		return $this->_getShippingCost($destination, $this->_getTotalWeight());
 	}
 
@@ -101,7 +101,7 @@ class OrderController extends Controller
 			'weight' => $weight,
 			'results' => $results,
 		];
-		
+
 		return $response;
 	}
 
@@ -111,7 +111,7 @@ class OrderController extends Controller
 		$destination = $request->get('city_id');
 
 		$shippingOptions = $this->_getShippingCost($destination, $this->_getTotalWeight());
-		
+
 		$selectedShipping = null;
 		if ($shippingOptions['results']) {
 			foreach ($shippingOptions['results'] as $shippingOption) {
@@ -157,9 +157,9 @@ class OrderController extends Controller
 		$totalWeight = $this->_getTotalWeight() / 1000;
 
 		$provinces = $this->getProvinces();
-		
+
 		$cities = isset(auth()->user()->province_id) ? $this->getCities(auth()->user()->province_id) : [];
-        
+
 		return view('frontend.orders.checkout', compact('items','totalWeight','provinces','cities'));
 	}
 
@@ -173,7 +173,7 @@ class OrderController extends Controller
 				$this->_saveOrderItems($order);
 				$this->_generatePaymentToken($order);
 				$this->_saveShipment($order, $params);
-	
+
 				return $order;
 			}
 		);
@@ -188,7 +188,7 @@ class OrderController extends Controller
 
 		return redirect()->back();
     }
-	
+
 	private function _getSelectedShipping($destination, $totalWeight, $shippingService)
 	{
 		$shippingOptions = $this->_getShippingCost($destination, $totalWeight);
@@ -210,7 +210,7 @@ class OrderController extends Controller
 	{
 		$destination = !isset($params['ship_to']) ? $params['shipping_city_id'] : $params['customer_shipping_city_id'];
 		$selectedShipping = $this->_getSelectedShipping($destination, $this->_getTotalWeight(), $params['shipping_service']);
-		
+
 		$baseTotalPrice = (int)Cart::subtotal(0,'','');
 		$taxAmount = 0;
 		$taxPercent = 0;
@@ -301,7 +301,7 @@ class OrderController extends Controller
 				];
 
 				$orderItem = OrderItem::create($orderItemParams);
-				
+
 				if ($orderItem) {
 					ProductInventory::reduceStock($orderItem->product_id, $orderItem->qty);
 				}
@@ -310,7 +310,7 @@ class OrderController extends Controller
 	}
 
 	private function _generatePaymentToken($order)
-	{
+	{;
 		$this->initPaymentGateway();
 
 		$customerDetails = [
@@ -323,7 +323,7 @@ class OrderController extends Controller
 		$params = [
 			'enable_payments' => Payment::PAYMENT_CHANNELS,
 			'transaction_details' => [
-				'order_id' => $order->code,
+                'order_id' => $order->code,
 				'gross_amount' => $order->grand_total,
 			],
 			'customer_details' => $customerDetails,
@@ -335,7 +335,7 @@ class OrderController extends Controller
 		];
 
 		$snap = \Midtrans\Snap::createTransaction($params);
-		
+
 		if ($snap->token) {
 			$order->payment_token = $snap->token;
 			$order->payment_url = $snap->redirect_url;
@@ -357,7 +357,7 @@ class OrderController extends Controller
 		$totalQty = 0;
 		foreach($order->orderItems as $orderItem) {
 			$totalQty += $orderItem->qty;
-		}	
+        }
 
 		$shipmentParams = [
 			'user_id' => auth()->id(),
