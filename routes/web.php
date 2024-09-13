@@ -74,7 +74,7 @@ Route::group(['middleware' => 'auth'], function() {
 
 });
 
-Route::post('notification', [\App\Http\Controllers\Frontend\PaymentController::class, 'notification']);
-Route::get('completed', [\App\Http\Controllers\Frontend\PaymentController::class, 'completed']);
-Route::get('failed', [\App\Http\Controllers\Frontend\PaymentController::class, 'failed']);
-Route::get('unfinish', [\App\Http\Controllers\Frontend\PaymentController::class, 'unfinish']);
+Route::post('payments/notification', [\App\Http\Controllers\Frontend\PaymentController::class, 'notification']);
+Route::get('payments/completed', [\App\Http\Controllers\Frontend\PaymentController::class, 'completed']);
+Route::get('payments/failed', [\App\Http\Controllers\Frontend\PaymentController::class, 'failed']);
+Route::get('payments/unfinish', [\App\Http\Controllers\Frontend\PaymentController::class, 'unfinish']);

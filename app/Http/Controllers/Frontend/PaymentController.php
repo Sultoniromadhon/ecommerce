@@ -125,6 +125,7 @@ class PaymentController extends Controller
         // Hitung validSignatureKey menggunakan order_id
         $validSignatureKey = hash("sha512", $notification->order_id . $notification->status_code . $notification->gross_amount . config('midtrans.serverKey'));
 
+        // $signatureString = $order_id . $status_code . $gross_amount . $serverKey;
         // Validasi signature
         if ($notification->signature_key != $validSignatureKey) {
             return response(['message' => 'Invalid signature'], 403);
