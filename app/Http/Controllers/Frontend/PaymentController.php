@@ -118,12 +118,12 @@ class PaymentController extends Controller
         $notification = json_decode($payload);
 
         // Pastikan data dari notifikasi tidak kosong
-        if (!$notification || !isset($notification->order_id) || !isset($notification->status_code) || !isset($notification->gross_amount)) {
+        if (!$notification || !isset($notification->user_id) || !isset($notification->status_code) || !isset($notification->gross_amount)) {
             return response(['message' => 'Invalid payload'], 400);
         }
 
         // Hitung validSignatureKey
-        $validSignatureKey = hash("sha512", $notification->order_id . $notification->status_code . $notification->gross_amount . config('midtrans.serverKey'));
+        $validSignatureKey = hash("sha512", $notification->user_id . $notification->status_code . $notification->gross_amount . config('midtrans.serverKey'));
 
         // Validasi signature
         if ($notification->signature_key != $validSignatureKey) {
