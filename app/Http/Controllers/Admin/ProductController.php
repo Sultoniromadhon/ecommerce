@@ -34,7 +34,7 @@ class ProductController extends Controller
         $categories = Category::orderBy('name', 'ASC')->get(['name','id']);
         $types = Product::types();
         $configurable_attributes = $this->_getConfigurableAttributes();
-        
+
         return view('admin.products.create', compact('categories', 'types', 'configurable_attributes'));
     }
 
@@ -42,7 +42,7 @@ class ProductController extends Controller
 	{
 		return Attribute::where('is_configurable', true)->get();
     }
-    
+
     private function _generateAttributeCombinations($arrays)
 	{
         $result = [[]];
@@ -57,14 +57,14 @@ class ProductController extends Controller
         }
 		return $result;
     }
-    
+
     private function _convertVariantAsName($variant)
 	{
 		$variantName = '';
 		foreach (array_keys($variant) as $key => $code) {
 			$attributeOptionID = $variant[$code];
 			$attributeOption = AttributeOption::find($attributeOptionID);
-			
+
 			if ($attributeOption) {
 				$variantName .= ' - ' . $attributeOption->name;
 			}
@@ -72,12 +72,12 @@ class ProductController extends Controller
 
 		return $variantName;
     }
-    
+
     private function _saveProductAttributeValues($product, $variant, $parentProductID)
 	{
 		foreach (array_values($variant) as $attributeOptionID) {
             $attributeOption = AttributeOption::find($attributeOptionID);
-		   
+
 			$attributeValueParams = [
 				'parent_product_id' => $parentProductID,
 				'product_id' => $product->id,
@@ -118,7 +118,7 @@ class ProductController extends Controller
                 $this->_saveProductAttributeValues($newProductVariant, $variant, $product->id);
 			}
 		}
-	}   
+    }
 
     /**
      * Store a newly created resource in storage.
@@ -137,12 +137,12 @@ class ProductController extends Controller
 				return $product;
 			}
         );
-        
+
         return redirect()->route('admin.products.edit', $product)->with([
             'message' => 'Berhasil di buat !',
             'alert-type' => 'success'
         ]);
-    } 
+    }
 
     /**
      * Display the specified resource.
@@ -174,7 +174,7 @@ class ProductController extends Controller
 
 				$product->status = $request['status'];
 				$product->save();
-				
+
 				ProductInventory::updateOrCreate(['product_id' => $product->id], ['qty' => $productParams['qty']]);
 			}
 		}
@@ -201,7 +201,7 @@ class ProductController extends Controller
 				return true;
 			}
         );
-        
+
         return redirect()->route('admin.products.index')->with([
             'message' => 'Berhasil di ganti !',
             'alert-type' => 'info'
