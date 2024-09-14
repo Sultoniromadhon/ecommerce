@@ -55,6 +55,7 @@ class PaymentController extends Controller
             $vendorName = $paymentNotification->va_numbers[0]->bank;
         }
 
+
         $paymentStatus = null;
         if ($transaction == 'capture') {
             // For credit card transaction, we need to check whether transaction is challenge by FDS or not
@@ -85,6 +86,10 @@ class PaymentController extends Controller
             $paymentStatus = Payment::CANCEL;
         }
 
+        return response()->json([
+            'message' => 'Error',
+            'data' => $notification
+        ], 200);
         $paymentParams = [
             'order_id' => $order->id,
             'number' => Payment::generateCode(),
