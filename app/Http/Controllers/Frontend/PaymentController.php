@@ -86,10 +86,7 @@ class PaymentController extends Controller
             $paymentStatus = Payment::CANCEL;
         }
 
-        return response()->json([
-            'message' => 'Error',
-            'data' => $notification
-        ], 200);
+
         $paymentParams = [
             'order_id' => $order->id,
             'number' => Payment::generateCode(),
