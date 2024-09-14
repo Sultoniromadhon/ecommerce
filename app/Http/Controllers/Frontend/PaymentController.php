@@ -57,34 +57,34 @@ class PaymentController extends Controller
 
 
         $paymentStatus = null;
-        if ($transaction == 'capture') {
-            // For credit card transaction, we need to check whether transaction is challenge by FDS or not
-            if ($type == 'credit_card') {
-                if ($fraud == 'challenge') {
-                    // TODO set payment status in merchant's database to 'Challenge by FDS'
-                    // TODO merchant should decide whether this transaction is authorized or not in MAP
-                    $paymentStatus = Payment::CHALLENGE;
-                } else {
-                    // TODO set payment status in merchant's database to 'Success'
-                    $paymentStatus = Payment::SUCCESS;
-                }
-            }
-        } else if ($transaction == 'settlement') {
-            // TODO set payment status in merchant's database to 'Settlement'
-            $paymentStatus = Payment::SETTLEMENT;
-        } else if ($transaction == 'pending') {
-            // TODO set payment status in merchant's database to 'Pending'
-            $paymentStatus = Payment::PENDING;
-        } else if ($transaction == 'deny') {
-            // TODO set payment status in merchant's database to 'Denied'
-            $paymentStatus = Payment::DENY;
-        } else if ($transaction == 'expire') {
-            // TODO set payment status in merchant's database to 'expire'
-            $paymentStatus = Payment::EXPIRE;
-        } else if ($transaction == 'cancel') {
-            // TODO set payment status in merchant's database to 'Denied'
-            $paymentStatus = Payment::CANCEL;
-        }
+        // if ($transaction == 'capture') {
+        //     // For credit card transaction, we need to check whether transaction is challenge by FDS or not
+        //     if ($type == 'credit_card') {
+        //         if ($fraud == 'challenge') {
+        //             // TODO set payment status in merchant's database to 'Challenge by FDS'
+        //             // TODO merchant should decide whether this transaction is authorized or not in MAP
+        //             $paymentStatus = Payment::CHALLENGE;
+        //         } else {
+        //             // TODO set payment status in merchant's database to 'Success'
+        //             $paymentStatus = Payment::SUCCESS;
+        //         }
+        //     }
+        // } else if ($transaction == 'settlement') {
+        //     // TODO set payment status in merchant's database to 'Settlement'
+        //     $paymentStatus = Payment::SETTLEMENT;
+        // } else if ($transaction == 'pending') {
+        //     // TODO set payment status in merchant's database to 'Pending'
+        //     $paymentStatus = Payment::PENDING;
+        // } else if ($transaction == 'deny') {
+        //     // TODO set payment status in merchant's database to 'Denied'
+        //     $paymentStatus = Payment::DENY;
+        // } else if ($transaction == 'expire') {
+        //     // TODO set payment status in merchant's database to 'expire'
+        //     $paymentStatus = Payment::EXPIRE;
+        // } else if ($transaction == 'cancel') {
+        //     // TODO set payment status in merchant's database to 'Denied'
+        //     $paymentStatus = Payment::CANCEL;
+        // }
 
 
         $paymentParams = [
@@ -104,30 +104,26 @@ class PaymentController extends Controller
 
         $payment = Payment::create($paymentParams);
 
-        if ($paymentStatus && $payment) {
-            DB::transaction(
-                function () use ($order, $payment) {
-                    if (in_array($payment->status, [Payment::SUCCESS, Payment::SETTLEMENT])) {
-                        $order->payment_status = Order::PAID;
-                        $order->status = Order::CONFIRMED;
-                        $order->save();
-                    }
-                }
-            );
-        }
+        // if ($paymentStatus && $payment) {
+        //     DB::transaction(
+        //         function () use ($order, $payment) {
+        //             if (in_array($payment->status, [Payment::SUCCESS, Payment::SETTLEMENT])) {
+        //                 $order->payment_status = Order::PAID;
+        //                 $order->status = Order::CONFIRMED;
+        //                 $order->save();
+        //             }
+        //         }
+        //     );
+        // }
 
         $message = 'Payment status is : ' . $paymentStatus;
 
-        // $response = [
-        //     'code' => 200,
-        //     'message' => $message,
-        // ];
-
-        // return response($response, 200);
-        return response()->json([
+        $response = [
+            'code' => 200,
             'message' => $message,
-            'data' => $notification
-        ], 200);
+        ];
+
+        return response($response, 200);
     }
 
     // public function notification(Request $request)
