@@ -19,26 +19,26 @@ class PaymentController extends Controller
         $notification = json_decode($payload);
 
         // Validasi jika payload kosong atau tidak valid
-        if (!$notification) {
-            return response(['message' => 'Invalid JSON payload'], 400);
-        }
+        // if (!$notification) {
+        //     return response(['message' => 'Invalid JSON payload'], 400);
+        // }
 
-        // Periksa apakah objek 'order_id' ada di payload
-        if (!isset($notification->order_id)) {
-            return response(['message' => 'Missing order_id in payload'], 400);
-        }
+        // // Periksa apakah objek 'order_id' ada di payload
+        // if (!isset($notification->order_id)) {
+        //     return response(['message' => 'Missing order_id in payload'], 400);
+        // }
 
-        // Validasi Signature Key
-        $validSignatureKey = hash(
-            "sha512",
-            $notification->order_id . $notification->status_code . $notification->gross_amount . config('midtrans.serverKey')
-        );
+        // // Validasi Signature Key
+        // $validSignatureKey = hash(
+        //     "sha512",
+        //     $notification->order_id . $notification->status_code . $notification->gross_amount . config('midtrans.serverKey')
+        // );
 
-        if ($notification->signature_key != $validSignatureKey) {
-            return response(['message' => 'Invalid signature'], 403);
-        }
+        // if ($notification->signature_key != $validSignatureKey) {
+        //     return response(['message' => 'Invalid signature'], 403);
+        // }
 
-        // Inisialisasi Midtrans Payment Gateway
+        // // Inisialisasi Midtrans Payment Gateway
         $this->initPaymentGateway();
 
         try {
@@ -48,29 +48,29 @@ class PaymentController extends Controller
             return response(['message' => 'Failed to process notification: ' . $e->getMessage()], 500);
         }
 
-        // Cari order berdasarkan kode (order_id)
-        $order = Order::where('code', $paymentNotification->order_id)->firstOrFail();
+        // // Cari order berdasarkan kode (order_id)
+        // $order = Order::where('code', $paymentNotification->order_id)->firstOrFail();
 
-        // Jika order sudah dibayar, kirim respons bahwa transaksi sudah dilakukan
-        if ($order->isPaid()) {
-            return response(['message' => 'The order has been paid before'], 422);
-        }
+        // // Jika order sudah dibayar, kirim respons bahwa transaksi sudah dilakukan
+        // if ($order->isPaid()) {
+        //     return response(['message' => 'The order has been paid before'], 422);
+        // }
 
-        // Ambil status transaksi dan detail pembayaran
+        // // Ambil status transaksi dan detail pembayaran
         $transaction = $paymentNotification->transaction_status;
         $type = $paymentNotification->payment_type;
         $orderId = $paymentNotification->order_id;
         $fraud = $paymentNotification->fraud_status;
 
-        // Ambil VA number jika ada
-        $vaNumber = null;
-        $vendorName = null;
-        if (!empty($paymentNotification->va_numbers[0])) {
-            $vaNumber = $paymentNotification->va_numbers[0]->va_number;
-            $vendorName = $paymentNotification->va_numbers[0]->bank;
-        }
+        // // Ambil VA number jika ada
+        // $vaNumber = null;
+        // $vendorName = null;
+        // if (!empty($paymentNotification->va_numbers[0])) {
+        //     $vaNumber = $paymentNotification->va_numbers[0]->va_number;
+        //     $vendorName = $paymentNotification->va_numbers[0]->bank;
+        // }
 
-        // Tentukan status pembayaran berdasarkan status transaksi
+        // // Tentukan status pembayaran berdasarkan status transaksi
         $paymentStatus = null;
         switch ($transaction) {
             case 'capture':
@@ -97,35 +97,35 @@ class PaymentController extends Controller
                 return response(['message' => 'Unknown transaction status'], 400);
         }
 
-        // Buat parameter pembayaran
-        $paymentParams = [
-            'order_id' => $order->id,
-            'number' => Payment::generateCode(),
-            'amount' => $paymentNotification->gross_amount,
-            'method' => 'midtrans',
-            'status' => $paymentStatus,
-            'token' => $paymentNotification->transaction_id,
-            'payloads' => $payload,
-            'payment_type' => $paymentNotification->payment_type,
-            'va_number' => $vaNumber,
-            'vendor_name' => $vendorName,
-            'biller_code' => $paymentNotification->biller_code ?? null,
-            'bill_key' => $paymentNotification->bill_key ?? null,
-        ];
+        // // Buat parameter pembayaran
+        // $paymentParams = [
+        //     'order_id' => $order->id,
+        //     'number' => Payment::generateCode(),
+        //     'amount' => $paymentNotification->gross_amount,
+        //     'method' => 'midtrans',
+        //     'status' => $paymentStatus,
+        //     'token' => $paymentNotification->transaction_id,
+        //     'payloads' => $payload,
+        //     'payment_type' => $paymentNotification->payment_type,
+        //     'va_number' => $vaNumber,
+        //     'vendor_name' => $vendorName,
+        //     'biller_code' => $paymentNotification->biller_code ?? null,
+        //     'bill_key' => $paymentNotification->bill_key ?? null,
+        // ];
 
-        // Simpan informasi pembayaran
-        $payment = Payment::create($paymentParams);
+        // // Simpan informasi pembayaran
+        // $payment = Payment::create($paymentParams);
 
-        // Proses order jika status pembayaran sukses
-        if ($paymentStatus && $payment) {
-            DB::transaction(function () use ($order, $payment) {
-                if (in_array($payment->status, [Payment::SUCCESS, Payment::SETTLEMENT])) {
-                    $order->payment_status = Order::PAID;
-                    $order->status = Order::CONFIRMED;
-                    $order->save();
-                }
-            });
-        }
+        // // Proses order jika status pembayaran sukses
+        // if ($paymentStatus && $payment) {
+        //     DB::transaction(function () use ($order, $payment) {
+        //         if (in_array($payment->status, [Payment::SUCCESS, Payment::SETTLEMENT])) {
+        //             $order->payment_status = Order::PAID;
+        //             $order->status = Order::CONFIRMED;
+        //             $order->save();
+        //         }
+        //     });
+        // }
 
         // Kembalikan respons
         $message = 'Payment status is : ' . $paymentStatus;
