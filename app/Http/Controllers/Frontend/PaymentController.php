@@ -16,6 +16,10 @@ class PaymentController extends Controller
     {
         $payload = $request->getContent();
         $notification = json_decode($payload);
+        return response()->json([
+            'message' => 'Data',
+            'data' => $notification
+        ], 200);
 
         if (!$notification) {
             return response(['message' => 'Invalid JSON payload'], 400);
