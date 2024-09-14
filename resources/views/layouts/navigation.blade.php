@@ -53,12 +53,12 @@
                             <p>Kategori</p>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    {{-- <li class="nav-item">
                         <a href="{{ route('admin.attributes.index') }}" class="nav-link">
                             <i class="fa fa-plus nav-icon"></i>
                             <p>Attribute</p>
                         </a>
-                    </li>
+                    </li> --}}
                     <li class="nav-item">
                         <a href="{{ route('admin.products.index') }}" class="nav-link">
                             <i class="fa fa-plus nav-icon"></i>
