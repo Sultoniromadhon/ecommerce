@@ -41,10 +41,10 @@ class PaymentController extends Controller
         $this->initPaymentGateway();
         $statusCode = null;
 
-        // $paymentNotification = new \Midtrans\Notification();
+        // $paymentNotification = new Notification();
         // \Log::info('Midtrans Notification Payload:', (array) $notification);
 
-        $order = Order::where('code', $notification->order_id)->first();
+        $order = Order::where('payment_token', $notification->transaction_id)->first();
         // // \Log::info('Midtrans Notification Payload2:', (array) $notification);
 
         if ($order->isPaid()) {
