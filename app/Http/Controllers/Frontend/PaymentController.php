@@ -41,11 +41,11 @@ class PaymentController extends Controller
         $this->initPaymentGateway();
         $statusCode = null;
 
-        $paymentNotification = new \Midtrans\Notification();
-        \Log::info('Midtrans Notification Payload:', (array) $notification);
+        // $paymentNotification = new \Midtrans\Notification();
+        // \Log::info('Midtrans Notification Payload:', (array) $notification);
 
-        $order = Order::where('code', $paymentNotification->order_id)->first();
-        \Log::info('Midtrans Notification Payload2:', (array) $notification);
+        // $order = Order::where('code', $paymentNotification->order_id)->first();
+        // \Log::info('Midtrans Notification Payload2:', (array) $notification);
 
         // if ($order->isPaid()) {
         //     return response(['message' => 'The order has been paid before'], 422);
@@ -78,7 +78,7 @@ class PaymentController extends Controller
         //     }
         // } else if ($transaction == 'settlement') {
         //     // TODO set payment status in merchant's database to 'Settlement'
-        //     $paymentStatus = Payment::SETTLEMENT;
+        $paymentStatus = Payment::SETTLEMENT;
         // } else if ($transaction == 'pending') {
         //     // TODO set payment status in merchant's database to 'Pending'
         //     $paymentStatus = Payment::PENDING;
@@ -120,7 +120,7 @@ class PaymentController extends Controller
         //             }
         //         }
         //     );
-        }
+        // }
 
         $message = 'Payment status is : ' . $paymentStatus;
 
