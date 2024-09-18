@@ -144,7 +144,7 @@ class PaymentController extends Controller
     public function completed(Request $request)
     {
         $code = $request->query('order_id');
-        $order = Order::where('code', $code)->first();
+        $order = Order::where('id', $code)->first();
 
         if ($order->payment_status == Order::UNPAID) {
             return redirect('payments/failed?order_id=' . $code);
