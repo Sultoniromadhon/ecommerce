@@ -42,11 +42,14 @@ class PaymentController extends Controller
         $statusCode = null;
 
         $paymentNotification = new \Midtrans\Notification();
-        // $order = Order::where('code', $paymentNotification->order_id)->first();
+        \Log::info('Midtrans Notification Payload:', (array) $notification);
 
-        // if ($order->isPaid()) {
-        //     return response(['message' => 'The order has been paid before'], 422);
-        // }
+        $order = Order::where('code', $paymentNotification->order_id)->first();
+        \Log::info('Midtrans Notification Payload2:', (array) $notification);
+
+        if ($order->isPaid()) {
+            return response(['message' => 'The order has been paid before'], 422);
+        }
 
         $transaction = $paymentNotification->transaction_status;
         $type = $paymentNotification->payment_type;
@@ -91,7 +94,7 @@ class PaymentController extends Controller
         }
 
         $paymentParams = [
-            'order_id' => 100,
+            'order_id' => $order->id,
             'number' => Payment::generateCode(),
             'amount' => $paymentNotification->gross_amount,
             'method' => 'midtrans',
@@ -107,17 +110,17 @@ class PaymentController extends Controller
 
         $payment = Payment::create($paymentParams);
 
-        // if ($paymentStatus && $payment) {
-        //     \DB::transaction(
-        //         function () use ($order, $payment) {
-        //             if (in_array($payment->status, [Payment::SUCCESS, Payment::SETTLEMENT])) {
-        //                 $order->payment_status = Order::PAID;
-        //                 $order->status = Order::CONFIRMED;
-        //                 $order->save();
-        //             }
-        //         }
-        //     );
-        // }
+        if ($paymentStatus && $payment) {
+            \DB::transaction(
+                function () use ($order, $payment) {
+                    if (in_array($payment->status, [Payment::SUCCESS, Payment::SETTLEMENT])) {
+                        $order->payment_status = Order::PAID;
+                        $order->status = Order::CONFIRMED;
+                        $order->save();
+                    }
+                }
+            );
+        }
 
         $message = 'Payment status is : ' . $paymentStatus;
 
