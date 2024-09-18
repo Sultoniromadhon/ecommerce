@@ -18,6 +18,7 @@ class PaymentController extends Controller
         $payload = $request->getContent();
         $notification = json_decode($payload);
 
+
         $validSignatureKey = hash("sha512", $notification->order_id . $notification->status_code . $notification->gross_amount . config('midtrans.serverKey'));
 
         if ($notification->signature_key != $validSignatureKey) {
@@ -28,7 +29,7 @@ class PaymentController extends Controller
         $statusCode = null;
 
         $paymentNotification = new \Midtrans\Notification();
-        $order = Order::where('code', $paymentNotification->order_id)->first();
+        $order = Order::where('id', $paymentNotification->order_id)->first();
 
         if ($order->isPaid()) {
             return response(['message' => 'The order has been paid before'], 422);
