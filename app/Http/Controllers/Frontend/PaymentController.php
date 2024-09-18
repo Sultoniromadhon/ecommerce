@@ -56,12 +56,12 @@ class PaymentController extends Controller
         $orderId = $notification->order_id;
         $fraud = $notification->fraud_status;
 
-        $vaNumber = null;
-        $vendorName = null;
-        if (!empty($notification->va_numbers[0])) {
-            $vaNumber = $notification->va_numbers[0]->va_number;
-            $vendorName = $notification->va_numbers[0]->bank;
-        }
+        // $vaNumber = null;
+        // $vendorName = null;
+        // if (!empty($notification->va_numbers[0])) {
+        //     $vaNumber = $notification->va_numbers[0]->va_number;
+        //     $vendorName = $notification->va_numbers[0]->bank;
+        // }
 
         $paymentStatus = null;
         if ($transaction == 'capture') {
@@ -102,10 +102,10 @@ class PaymentController extends Controller
             'token' => $notification->transaction_id,
             'payloads' => $payload,
             'payment_type' => $notification->payment_type,
-            'va_number' => $vaNumber,
-            'vendor_name' => $vendorName,
-            'biller_code' => $notification->biller_code,
-            'bill_key' => $notification->bill_key,
+            // 'va_number' => $vaNumber,
+            // 'vendor_name' => $vendorName,
+            // 'biller_code' => $notification->biller_code,
+            // 'bill_key' => $notification->bill_key,
         ];
 
         $payment = Payment::create($paymentParams);
