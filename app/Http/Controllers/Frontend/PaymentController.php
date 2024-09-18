@@ -13,27 +13,40 @@ use App\Http\Controllers\Controller;
 class PaymentController extends Controller
 {
 
+    // $payload      = $request->getContent();
+    // $notification = json_decode($payload);
+
+    // $validSignatureKey = hash("sha512", $notification->order_id . $notification->status_code . $notification->gross_amount . config('services.midtrans.serverKey'));
+
+    // if ($notification->signature_key != $validSignatureKey) {
+    //     return response(['message' => 'Invalid signature'], 403);
+    // }
+
+    // $transaction  = $notification->transaction_status;
+    // $type         = $notification->payment_type;
+    // $orderId      = $notification->order_id;
+    // $fraud        = $notification->fraud_status;
+
     public function notification(Request $request)
     {
         $payload = $request->getContent();
         $notification = json_decode($payload);
 
+        $validSignatureKey = hash("sha512", $notification->order_id . $notification->status_code . $notification->gross_amount . config('midtrans.serverKey'));
 
-        // $validSignatureKey = hash("sha512", $notification->id . $notification->status_code . $notification->gross_amount . config('midtrans.serverKey'));
-
-        // if ($notification->signature_key != $validSignatureKey) {
-        //     return response(['message' => 'Invalid signature'], 403);
-        // }
+        if ($notification->signature_key != $validSignatureKey) {
+            return response(['message' => 'Invalid signature'], 403);
+        }
 
         $this->initPaymentGateway();
         $statusCode = null;
 
         $paymentNotification = new \Midtrans\Notification();
-        $order = Order::where('id', $paymentNotification->id)->first();
+        // $order = Order::where('code', $paymentNotification->order_id)->first();
 
-        if ($order->isPaid()) {
-            return response(['message' => 'The order has been paid before'], 422);
-        }
+        // if ($order->isPaid()) {
+        //     return response(['message' => 'The order has been paid before'], 422);
+        // }
 
         $transaction = $paymentNotification->transaction_status;
         $type = $paymentNotification->payment_type;
@@ -78,7 +91,7 @@ class PaymentController extends Controller
         }
 
         $paymentParams = [
-            'order_id' => $order->id,
+            'order_id' => 100,
             'number' => Payment::generateCode(),
             'amount' => $paymentNotification->gross_amount,
             'method' => 'midtrans',
@@ -94,17 +107,17 @@ class PaymentController extends Controller
 
         $payment = Payment::create($paymentParams);
 
-        if ($paymentStatus && $payment) {
-            \DB::transaction(
-                function () use ($order, $payment) {
-                    if (in_array($payment->status, [Payment::SUCCESS, Payment::SETTLEMENT])) {
-                        $order->payment_status = Order::PAID;
-                        $order->status = Order::CONFIRMED;
-                        $order->save();
-                    }
-                }
-            );
-        }
+        // if ($paymentStatus && $payment) {
+        //     \DB::transaction(
+        //         function () use ($order, $payment) {
+        //             if (in_array($payment->status, [Payment::SUCCESS, Payment::SETTLEMENT])) {
+        //                 $order->payment_status = Order::PAID;
+        //                 $order->status = Order::CONFIRMED;
+        //                 $order->save();
+        //             }
+        //         }
+        //     );
+        // }
 
         $message = 'Payment status is : ' . $paymentStatus;
 
@@ -126,9 +139,8 @@ class PaymentController extends Controller
      */
     public function completed(Request $request)
     {
-        $code = $request->query('id');
-        // dd($code);
-        $order = Order::where('id', $code)->first();
+        $code = $request->query('order_id');
+        $order = Order::where('code', $code)->first();
 
         if ($order->payment_status == Order::UNPAID) {
             return redirect('payments/failed?order_id=' . $code);
@@ -136,8 +148,7 @@ class PaymentController extends Controller
 
         // \Session::flash('success', "Thank you for completing the payment process!");
 
-        // return redirect('orders/received/' . $order->id);
-        return response()->json(['message' => 'Completed route works!']);
+        return redirect('orders/received/' . $order->id);
     }
 
     /**
