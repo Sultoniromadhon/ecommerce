@@ -19,11 +19,11 @@ class PaymentController extends Controller
         $notification = json_decode($payload);
 
 
-        $validSignatureKey = hash("sha512", $notification->id . $notification->status_code . $notification->gross_amount . config('midtrans.serverKey'));
+        // $validSignatureKey = hash("sha512", $notification->id . $notification->status_code . $notification->gross_amount . config('midtrans.serverKey'));
 
-        if ($notification->signature_key != $validSignatureKey) {
-            return response(['message' => 'Invalid signature'], 403);
-        }
+        // if ($notification->signature_key != $validSignatureKey) {
+        //     return response(['message' => 'Invalid signature'], 403);
+        // }
 
         $this->initPaymentGateway();
         $statusCode = null;
