@@ -44,88 +44,89 @@ class PaymentController extends Controller
         // $paymentNotification = new \Midtrans\Notification();
         // \Log::info('Midtrans Notification Payload:', (array) $notification);
 
-        // $order = Order::where('code', $paymentNotification->order_id)->first();
-        // \Log::info('Midtrans Notification Payload2:', (array) $notification);
+        $order = Order::where('code', $notification->order_id)->first();
+        // // \Log::info('Midtrans Notification Payload2:', (array) $notification);
 
-        // if ($order->isPaid()) {
-        //     return response(['message' => 'The order has been paid before'], 422);
-        // }
+        if ($order->isPaid()) {
+            return response(['message' => 'The order has been paid before'], 422);
+        }
 
-        // $transaction = $paymentNotification->transaction_status;
-        // $type = $paymentNotification->payment_type;
-        // $orderId = $paymentNotification->order_id;
-        // $fraud = $paymentNotification->fraud_status;
+        $transaction = $notification->transaction_status;
+        $type = $notification->payment_type;
+        $orderId = $notification->order_id;
+        $fraud = $notification->fraud_status;
 
-        // $vaNumber = null;
-        // $vendorName = null;
-        // if (!empty($paymentNotification->va_numbers[0])) {
-        //     $vaNumber = $paymentNotification->va_numbers[0]->va_number;
-        //     $vendorName = $paymentNotification->va_numbers[0]->bank;
-        // }
+        $vaNumber = null;
+        $vendorName = null;
+        if (!empty($notification->va_numbers[0])) {
+            $vaNumber = $notification->va_numbers[0]->va_number;
+            $vendorName = $notification->va_numbers[0]->bank;
+        }
 
-        // $paymentStatus = null;
-        // if ($transaction == 'capture') {
-        //     // For credit card transaction, we need to check whether transaction is challenge by FDS or not
-        //     if ($type == 'credit_card') {
-        //         if ($fraud == 'challenge') {
-        //             // TODO set payment status in merchant's database to 'Challenge by FDS'
-        //             // TODO merchant should decide whether this transaction is authorized or not in MAP
-        //             $paymentStatus = Payment::CHALLENGE;
-        //         } else {
-        //             // TODO set payment status in merchant's database to 'Success'
-        //             $paymentStatus = Payment::SUCCESS;
-        //         }
-        //     }
-        // } else if ($transaction == 'settlement') {
-        //     // TODO set payment status in merchant's database to 'Settlement'
-        $paymentStatus = Payment::SETTLEMENT;
-        // } else if ($transaction == 'pending') {
-        //     // TODO set payment status in merchant's database to 'Pending'
-        //     $paymentStatus = Payment::PENDING;
-        // } else if ($transaction == 'deny') {
-        //     // TODO set payment status in merchant's database to 'Denied'
-        //     $paymentStatus = PAYMENT::DENY;
-        // } else if ($transaction == 'expire') {
-        //     // TODO set payment status in merchant's database to 'expire'
-        //     $paymentStatus = PAYMENT::EXPIRE;
-        // } else if ($transaction == 'cancel') {
-        //     // TODO set payment status in merchant's database to 'Denied'
-        //     $paymentStatus = PAYMENT::CANCEL;
-        // }
+        $paymentStatus = null;
+        if ($transaction == 'capture') {
+            // For credit card transaction, we need to check whether transaction is challenge by FDS or not
+            if ($type == 'credit_card') {
+                if ($fraud == 'challenge') {
+                    // TODO set payment status in merchant's database to 'Challenge by FDS'
+                    // TODO merchant should decide whether this transaction is authorized or not in MAP
+                    $paymentStatus = Payment::CHALLENGE;
+                } else {
+                    // TODO set payment status in merchant's database to 'Success'
+                    $paymentStatus = Payment::SUCCESS;
+                }
+            }
+        } else if ($transaction == 'settlement') {
+            //     // TODO set payment status in merchant's database to 'Settlement'
+            $paymentStatus = Payment::SETTLEMENT;
+        } else if ($transaction == 'pending') {
+            // TODO set payment status in merchant's database to 'Pending'
+            $paymentStatus = Payment::PENDING;
+        } else if ($transaction == 'deny') {
+            // TODO set payment status in merchant's database to 'Denied'
+            $paymentStatus = PAYMENT::DENY;
+        } else if ($transaction == 'expire') {
+            // TODO set payment status in merchant's database to 'expire'
+            $paymentStatus = PAYMENT::EXPIRE;
+        } else if ($transaction == 'cancel') {
+            // TODO set payment status in merchant's database to 'Denied'
+            $paymentStatus = PAYMENT::CANCEL;
+        }
 
-        // $paymentParams = [
-        //     'order_id' => $order->id,
-        //     'number' => Payment::generateCode(),
-        //     'amount' => $paymentNotification->gross_amount,
-        //     'method' => 'midtrans',
-        //     'status' => $paymentStatus,
-        //     'token' => $paymentNotification->transaction_id,
-        //     'payloads' => $payload,
-        //     'payment_type' => $paymentNotification->payment_type,
-        //     'va_number' => $vaNumber,
-        //     'vendor_name' => $vendorName,
-        //     'biller_code' => $paymentNotification->biller_code,
-        //     'bill_key' => $paymentNotification->bill_key,
-        // ];
+        $paymentParams = [
+            'order_id' => $order->id,
+            'number' => Payment::generateCode(),
+            'amount' => $notification->gross_amount,
+            'method' => 'midtrans',
+            'status' => $paymentStatus,
+            'token' => $notification->transaction_id,
+            'payloads' => $payload,
+            'payment_type' => $notification->payment_type,
+            'va_number' => $vaNumber,
+            'vendor_name' => $vendorName,
+            'biller_code' => $notification->biller_code,
+            'bill_key' => $notification->bill_key,
+        ];
 
-        // $payment = Payment::create($paymentParams);
+        $payment = Payment::create($paymentParams);
 
-        // if ($paymentStatus && $payment) {
-        //     \DB::transaction(
-        //         function () use ($order, $payment) {
-        //             if (in_array($payment->status, [Payment::SUCCESS, Payment::SETTLEMENT])) {
-        //                 $order->payment_status = Order::PAID;
-        //                 $order->status = Order::CONFIRMED;
-        //                 $order->save();
-        //             }
-        //         }
-        //     );
-        // }
+        if ($paymentStatus && $payment) {
+            \DB::transaction(
+                function () use ($order, $payment) {
+                    if (in_array($payment->status, [Payment::SUCCESS, Payment::SETTLEMENT])) {
+                        $order->payment_status = Order::PAID;
+                        $order->status = Order::CONFIRMED;
+                        $order->save();
+                    }
+                }
+            );
+        }
 
         $message = 'Payment status is : ' . $paymentStatus;
 
         $response = [
             'code' => 200,
+            'data' => $notification->order_id,
             'message' => $message,
         ];
 
