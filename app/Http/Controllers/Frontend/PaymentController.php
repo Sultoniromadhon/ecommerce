@@ -47,29 +47,29 @@ class PaymentController extends Controller
         $order = Order::where('code', $paymentNotification->order_id)->first();
         \Log::info('Midtrans Notification Payload2:', (array) $notification);
 
-        if ($order->isPaid()) {
-            return response(['message' => 'The order has been paid before'], 422);
-        }
+        // if ($order->isPaid()) {
+        //     return response(['message' => 'The order has been paid before'], 422);
+        // }
 
-        $transaction = $paymentNotification->transaction_status;
-        $type = $paymentNotification->payment_type;
-        $orderId = $paymentNotification->order_id;
-        $fraud = $paymentNotification->fraud_status;
+        // $transaction = $paymentNotification->transaction_status;
+        // $type = $paymentNotification->payment_type;
+        // $orderId = $paymentNotification->order_id;
+        // $fraud = $paymentNotification->fraud_status;
 
-        $vaNumber = null;
-        $vendorName = null;
-        if (!empty($paymentNotification->va_numbers[0])) {
-            $vaNumber = $paymentNotification->va_numbers[0]->va_number;
-            $vendorName = $paymentNotification->va_numbers[0]->bank;
-        }
+        // $vaNumber = null;
+        // $vendorName = null;
+        // if (!empty($paymentNotification->va_numbers[0])) {
+        //     $vaNumber = $paymentNotification->va_numbers[0]->va_number;
+        //     $vendorName = $paymentNotification->va_numbers[0]->bank;
+        // }
 
-        $paymentStatus = null;
-        if ($transaction == 'capture') {
-            // For credit card transaction, we need to check whether transaction is challenge by FDS or not
-            if ($type == 'credit_card') {
-                if ($fraud == 'challenge') {
-                    // TODO set payment status in merchant's database to 'Challenge by FDS'
-                    // TODO merchant should decide whether this transaction is authorized or not in MAP
+        // $paymentStatus = null;
+        // if ($transaction == 'capture') {
+        //     // For credit card transaction, we need to check whether transaction is challenge by FDS or not
+        //     if ($type == 'credit_card') {
+        //         if ($fraud == 'challenge') {
+        //             // TODO set payment status in merchant's database to 'Challenge by FDS'
+        //             // TODO merchant should decide whether this transaction is authorized or not in MAP
         //             $paymentStatus = Payment::CHALLENGE;
         //         } else {
         //             // TODO set payment status in merchant's database to 'Success'
