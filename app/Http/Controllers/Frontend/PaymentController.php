@@ -135,25 +135,35 @@ class PaymentController extends Controller
 
     public function notification(Request $request)
     {
+        Log::info('Midtrans Notification: Request received.');
+
         $payload = $request->getContent();
+        Log::info('Midtrans Notification: Payload received.', ['payload' => $payload]);
+
         $notification = json_decode($payload);
+        Log::info('Midtrans Notification: Payload decoded.', ['notification' => $notification]);
 
         $validSignatureKey = hash("sha512", $notification->order_id . $notification->status_code . $notification->gross_amount . config('midtrans.server_key'));
+        Log::info('Midtrans Notification: Signature key generated.', ['validSignatureKey' => $validSignatureKey]);
 
         if (
             $notification->signature_key != $validSignatureKey
         ) {
+            Log::warning('Midtrans Notification: Invalid signature.', ['signature_key' => $notification->signature_key]);
             return response(['message' => 'Invalid signature'], 403);
         }
 
         $this->initPaymentGateway();
+        Log::info('Midtrans Notification: Payment gateway initialized.');
 
-        // Tambahkan ini untuk memproses notifikasi
         $paymentNotification = new Notification();
+        Log::info('Midtrans Notification: Notification object created.', ['paymentNotification' => $paymentNotification]);
 
         $order = Order::where('payment_token', $paymentNotification->transaction_id)->first();
+        Log::info('Midtrans Notification: Order fetched.', ['order' => $order]);
 
         if ($order->isPaid()) {
+            Log::info('Midtrans Notification: Order already paid.', ['order_id' => $order->id]);
             return response(['message' => 'The order has been paid before'], 422);
         }
 
@@ -162,27 +172,39 @@ class PaymentController extends Controller
         $orderId = $paymentNotification->order_id;
         $fraud = $paymentNotification->fraud_status;
 
+        Log::info('Midtrans Notification: Transaction details.', [
+            'transaction' => $transaction,
+            'type' => $type,
+            'orderId' => $orderId,
+            'fraud' => $fraud
+        ]);
+
         $paymentStatus = null;
         if ($transaction == 'capture') {
             if ($type == 'credit_card') {
-                if (
-                    $fraud == 'challenge'
-                ) {
+                if ($fraud == 'challenge') {
                     $paymentStatus = Payment::CHALLENGE;
+                    Log::info('Midtrans Notification: Payment status set to CHALLENGE.');
                 } else {
                     $paymentStatus = Payment::SUCCESS;
+                    Log::info('Midtrans Notification: Payment status set to SUCCESS.');
                 }
             }
         } else if ($transaction == 'settlement') {
             $paymentStatus = Payment::SETTLEMENT;
+            Log::info('Midtrans Notification: Payment status set to SETTLEMENT.');
         } else if ($transaction == 'pending') {
             $paymentStatus = Payment::PENDING;
+            Log::info('Midtrans Notification: Payment status set to PENDING.');
         } else if ($transaction == 'deny') {
             $paymentStatus = Payment::DENY;
+            Log::info('Midtrans Notification: Payment status set to DENY.');
         } else if ($transaction == 'expire') {
             $paymentStatus = Payment::EXPIRE;
+            Log::info('Midtrans Notification: Payment status set to EXPIRE.');
         } else if ($transaction == 'cancel') {
             $paymentStatus = Payment::CANCEL;
+            Log::info('Midtrans Notification: Payment status set to CANCEL.');
         }
 
         $paymentParams = [
@@ -196,22 +218,26 @@ class PaymentController extends Controller
             'payment_type' => $paymentNotification->payment_type,
         ];
 
-        $payment = Payment::create($paymentParams);
+        Log::info('Midtrans Notification: Payment parameters prepared.', ['paymentParams' => $paymentParams]);
 
-        if (
-            $paymentStatus && $payment
-        ) {
+        $payment = Payment::create($paymentParams);
+        Log::info('Midtrans Notification: Payment record created.', ['payment' => $payment]);
+
+        if ($paymentStatus && $payment) {
             DB::transaction(function () use ($order, $payment) {
                 if (in_array($payment->status, [Payment::SUCCESS, Payment::SETTLEMENT])) {
                     $order->payment_status = Order::PAID;
                     $order->status = Order::CONFIRMED;
                     $order->save();
+                    Log::info('Midtrans Notification: Order status updated to PAID and CONFIRMED.', ['order' => $order]);
                 }
             });
         }
 
+        Log::info('Midtrans Notification: Process completed successfully.');
         return response()->json(['status' => 'success']);
     }
+
 
     /**
      * Show completed payment status
