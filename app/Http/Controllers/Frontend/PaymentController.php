@@ -135,6 +135,25 @@ class PaymentController extends Controller
 
     public function notification(Request $request)
     {
+
+        // $payload = [
+        //     'transaction_details' => [
+        //         'order_id'      => $donation->invoice,
+        //         'gross_amount'  => $donation->amount,
+        //     ],
+        //     'customer_details' => [
+        //         'first_name'       => auth()->guard('api')->user()->name,
+        //         'email'            => auth()->guard('api')->user()->email,
+        //     ]
+        // ];
+
+        // //create snap token
+        // $snapToken = Snap::getSnapToken($payload);
+        // $donation->snap_token = $snapToken;
+        // $donation->save();
+
+        // $this->response['snap_token'] = $snapToken;
+
         Log::info('Midtrans Notification: Request received.');
 
         $payload = $request->getContent();
