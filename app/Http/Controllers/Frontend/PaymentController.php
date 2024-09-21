@@ -258,6 +258,40 @@ class PaymentController extends Controller
     }
 
 
+    public function notificationHandler(Request $request)
+    {
+        $notification = new Notification();
+
+        $transaction = $notification->transaction_status;
+        $type = $notification->payment_type;
+        $orderId = $notification->order_id;
+        $fraud = $notification->fraud_status;
+
+        // Lakukan logika sesuai dengan status transaksi
+        if ($transaction == 'capture') {
+            if ($type == 'credit_card') {
+                if ($fraud == 'challenge') {
+                    // Transaksi ditandai sebagai challenge oleh Midtrans
+                } else {
+                    // Transaksi berhasil
+                }
+            }
+        } else if ($transaction == 'settlement') {
+            // Transaksi berhasil
+        } else if ($transaction == 'pending') {
+            // Menunggu pembayaran
+        } else if ($transaction == 'deny') {
+            // Transaksi ditolak
+        } else if ($transaction == 'expire') {
+            // Transaksi kadaluarsa
+        } else if ($transaction == 'cancel') {
+            // Transaksi dibatalkan
+        }
+
+        return response()->json(['status' => 'success']);
+    }
+
+
     /**
      * Show completed payment status
      *
