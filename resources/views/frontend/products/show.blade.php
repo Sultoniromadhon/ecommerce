@@ -79,13 +79,14 @@
 				</div>
 				<div class="col-md-12 col-lg-5 col-12">
 					<div class="product-details-content">
-						<h3>{{ $product->name }}</h3>
+                        <h3>{{ $product->name }}</h3>
 						<div class="details-price">
-							<span>{{ number_format($product->priceLabel()) }}</span>
+                            <span>{{ number_format($product->priceLabel()) }}</span>
 						</div>
 						<p>{{ $product->short_description }}</p>
+                        <span class="text-danger">Sisa: {{$product->productInventory->qty}}</span>
                         <form action="{{ route('carts.store') }}" method="post">
-							@csrf
+                            @csrf
 							<input type="hidden" name="product_id" value="{{ $product->id }}">
 							@if ($product->type == 'configurable')
 								<div class="quick-view-select">
@@ -93,7 +94,7 @@
 										<label>Size*</label>
                                         <select name="size" class="select" id="">
                                             @foreach($sizes as $size)
-                                                <option value="{{ $size }}">{{ $size }}</option>
+                                            <option value="{{ $size }}">{{ $size }}</option>
                                             @endforeach
                                         </select>
 									</div>
@@ -125,6 +126,7 @@
 								<li class="categories-title">Categories :</li>
 								@foreach ($product->categories as $category)
 									<li><a href="{{ url('products/category/'. $category->slug ) }}">{{ $category->name }}</a></li>
+
 								@endforeach
 							</ul>
 						</div>

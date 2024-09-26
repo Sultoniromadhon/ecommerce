@@ -35,7 +35,7 @@
 				<div class="popular-product-active owl-carousel">
 					@foreach ($products as $product)
 						@php
-							$product = $product->parent ?: $product;	
+							$product = $product->parent ?: $product;
 						@endphp
 						<div class="product-wrapper">
 							<div class="product-img">
@@ -56,12 +56,17 @@
 									<a class="animate-right quick-view" title="Quick View" product-slug="{{ $product->slug }}" href="">
 										<i class="pe-7s-look"></i>
 									</a>
+
 								</div>
 							</div>
 							<div class="funiture-product-content text-center">
 								<h4><a href="{{ url('product/'. $product->slug) }}">{{ $product->name }}</a></h4>
+								<span class="opacity-50 text-danger ">Sisa: {{$product->productInventory->qty}}</span>
+
+                                <br>
 								<span>Rp{{ number_format($product->priceLabel(), 0, ",", ".") }}</span>
 							</div>
+
 						</div>
 					@endforeach
 				</div>
@@ -69,7 +74,7 @@
 		</div>
 	</div>
 
-       
+
 	<!-- product area end -->
 @endif
     <!-- end -->

@@ -6,14 +6,16 @@ use App\Models\Slide;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\ProductInventory;
 
 class HomepageController extends Controller
 {
     public function index()
     {
         $products = Product::active()->get();
-        $slides = Slide::active()->orderBy('position', 'ASC')->get();;
-        
+        $slides = Slide::active()->orderBy('position', 'ASC')->get();
+
+
         return view('frontend.homepage', compact('products', 'slides'));
     }
 }

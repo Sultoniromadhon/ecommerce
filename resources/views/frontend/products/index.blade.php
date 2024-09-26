@@ -136,6 +136,8 @@
                                                     </div>
                                                     <div class="product-content">
                                                         <h4><a href="{{ url('product/'. $product->slug) }}">{{ $product->name }}</a></h4>
+                                                        <span class="text-danger">Sisa: {{$product->productInventory->qty}}</span>
+                                                        <br>
                                                         <span>{{ number_format($product->priceLabel()) }}</span>
                                                     </div>
                                                 </div>
